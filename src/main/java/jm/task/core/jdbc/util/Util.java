@@ -3,12 +3,10 @@ package jm.task.core.jdbc.util;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
 
 import jm.task.core.jdbc.model.User;
@@ -40,19 +38,9 @@ public class Util {
             try {
                 Class.forName(DRIVER);
                 Configuration configuration = new Configuration();
-                Properties settings = new Properties();
-                settings.put(Environment.DRIVER, DRIVER);
-                settings.put(Environment.URL, URL);
-                settings.put(Environment.USER, USER);
-                settings.put(Environment.PASS, PASSWORD);
-                settings.put(Environment.DIALECT, "org.hibernate.dialect.PostgreSQL10Dialect");
-                // settings.put(Environment.SHOW_SQL, "true");
                 configuration.addAnnotatedClass(User.class);
-                configuration.setProperties(settings);
-                ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                        .applySettings(configuration.getProperties()).build();
-
-                sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+                configuration.configure("/jm/task/core/jdbc/util/hibernate.cfg.xml");
+                sessionFactory = configuration.buildSessionFactory();
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
