@@ -13,6 +13,7 @@ import jm.task.core.jdbc.util.Util;
 
 public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
     private Connection conn;
+
     public UserDaoJDBCImpl() {
         conn = Util.getConnection();
         if (conn == null) {
@@ -21,6 +22,7 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
             System.exit(-1);
         }
     }
+
     @Override
     public void close() {
         try {
