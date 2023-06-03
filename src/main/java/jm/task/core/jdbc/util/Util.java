@@ -33,6 +33,24 @@ public class Util {
         }
     }
 
+    // dont quite understand the task, so implemented 2 ways of configuration
+    public static SessionFactory getSessionFactory() {
+        if (sessionFactory == null) { 
+            Configuration configuration = new Configuration(); 
+            configuration.setProperty("hibernate.connection.driver_class", "org.postgresql.Driver"); 
+            configuration.setProperty("hibernate.connection.url", "jdbc:postgresql://localhost:5432/mydatabase"); 
+            configuration.setProperty("hibernate.connection.username", "myusername"); 
+            configuration.setProperty("hibernate.connection.password", "mypassword"); 
+            configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect"); 
+            configuration.setProperty("hibernate.show_sql", "true"); 
+             
+            ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder() 
+                    .applySettings(configuration.getProperties()).build(); 
+            sessionFactory = configuration.buildSessionFactory(serviceRegistry); 
+        } 
+        return sessionFactory;
+    }
+    /*
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
             try {
@@ -48,4 +66,5 @@ public class Util {
         }
         return sessionFactory;
     }
+    */
 }
