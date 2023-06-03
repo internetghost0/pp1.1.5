@@ -15,7 +15,7 @@ import jm.task.core.jdbc.model.User;
 
 public class Util {
     private final static String URL = "jdbc:postgresql://localhost:5432/firstdb";
-    private final static String USERNAME = "zer0";
+    private final static String USER = "zer0";
     private final static String PASSWORD = "toor";
     private final static String DRIVER = "org.postgresql.Driver";
 
@@ -28,46 +28,31 @@ public class Util {
             System.err.println(e);
         }
         try {
-            return DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    // dont quite understand the task, so implemented 2 ways of configuration
-    public static SessionFactory getSessionFactory() {
-        try {
-            Class.forName(DRIVER);
-        } catch (Exception e) {
-            System.err.println(e);
-        }
-        if (sessionFactory == null) { 
-            Configuration configuration = new Configuration();
-            Properties settings = new Properties();
-            settings.put(Environment.DRIVER, DRIVER);
-            settings.put(Environment.URL, URL);
-            settings.put(Environment.USER, USERNAME);
-            settings.put(Environment.PASS, PASSWORD);
-            settings.put(Environment.DIALECT, "org.hibernate.dialect.PostgreSQLDialect");
-            configuration.setProperties(settings);
-            configuration.addAnnotatedClass(User.class);
-            ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                    .applySettings(configuration.getProperties()).build();
-
-            sessionFactory = configuration.buildSessionFactory(serviceRegistry);
-        } 
-        return sessionFactory;
-    }
-    /*
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
             try {
                 Class.forName(DRIVER);
                 Configuration configuration = new Configuration();
+                Properties settings = new Properties();
+                settings.put(Environment.DRIVER, DRIVER);
+                settings.put(Environment.URL, URL);
+                settings.put(Environment.USER, USER);
+                settings.put(Environment.PASS, PASSWORD);
+                settings.put(Environment.DIALECT, "org.hibernate.dialect.PostgreSQL10Dialect");
+                // settings.put(Environment.SHOW_SQL, "true");
                 configuration.addAnnotatedClass(User.class);
-                configuration.configure("/jm/task/core/jdbc/util/hibernate.cfg.xml");
-                sessionFactory = configuration.buildSessionFactory();
+                configuration.setProperties(settings);
+                ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                        .applySettings(configuration.getProperties()).build();
+
+                sessionFactory = configuration.buildSessionFactory(serviceRegistry);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -75,5 +60,4 @@ public class Util {
         }
         return sessionFactory;
     }
-    */
 }
