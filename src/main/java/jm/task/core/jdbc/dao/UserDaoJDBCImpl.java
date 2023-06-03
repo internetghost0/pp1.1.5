@@ -3,38 +3,35 @@ package jm.task.core.jdbc.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.SessionFactory;
-
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 
-public class UserDaoJDBCImpl implements UserDao {
+public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
+    private Connection conn;
     public UserDaoJDBCImpl() {
-        SessionFactory sf = Util.getSessionFactory();
-        if (sf == null) {
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!");
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!");
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!");
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!");
+        conn = Util.getConnection();
+        if (conn == null) {
+            System.err.println("[!] Can't get connection from database");
+            // im not sure is it good way to just exit the program or not
+            System.exit(-1);
         }
     }
-
-    private Statement executeQuery(String query) {
-        try (Connection conn = Util.getConnection()) {
-            Statement statement = conn.createStatement();
-            statement.execute(query);
-            return statement;
-        } catch (Exception e) {
+    @Override
+    public void close() {
+        try {
+            conn.close();
+        } catch (SQLException e) {
             e.printStackTrace();
-            return null;
+            System.err.println("[!] Can't close the connection from database");
         }
-
     }
 
+    @Override
     public void createUsersTable() {
         // postgresql does not have TINYINT or any one bit integer
         String query = """
@@ -44,57 +41,77 @@ public class UserDaoJDBCImpl implements UserDao {
                     lastname VARCHAR,
                     age SMALLINT
                     )""";
-        executeQuery(query);
+
+        try (Statement statement = conn.createStatement()) {
+            statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    @Override
     public void dropUsersTable() {
         String query = "DROP TABLE IF EXISTS users";
-        executeQuery(query);
+        try (Statement statement = conn.createStatement()) {
+            statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    @Override
     public void saveUser(String name, String lastName, byte age) {
-        try (Connection conn = Util.getConnection()) {
+        try {
             PreparedStatement ps = conn.prepareStatement("INSERT INTO users (name, lastname, age) VALUES (?, ?, ?)");
             ps.setString(1, name);
             ps.setString(2, lastName);
             ps.setByte(3, age);
             ps.executeUpdate();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
     }
 
+    @Override
     public void removeUserById(long id) {
-        try (Connection conn = Util.getConnection()) {
+        try {
             PreparedStatement ps = conn.prepareStatement("DELETE FROM users WHERE id = ?");
             ps.setLong(1, id);
             ps.executeUpdate();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
     }
 
+    @Override
     public List<User> getAllUsers() {
-        createUsersTable();
         String query = "SELECT * FROM users";
         ArrayList<User> list = new ArrayList<>();
-        try (Statement statement = executeQuery(query)) {
+        try (Statement statement = conn.createStatement()) {
+            statement.execute(query);
             ResultSet result = statement.getResultSet();
             while (result.next()) {
-                list.add(new User(result.getString("name"),
+                User user = new User(result.getString("name"),
                         result.getString("lastname"),
-                        (byte) result.getInt("age")));
+                        result.getByte("age"));
+                user.setId(result.getLong("id"));
+                list.add(user);
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;
     }
 
+    @Override
     public void cleanUsersTable() {
-        createUsersTable();
-        executeQuery("TRUNCATE TABLE users");
+        String query = "TRUNCATE TABLE users";
+        try (Statement statement = conn.createStatement()) {
+            statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
