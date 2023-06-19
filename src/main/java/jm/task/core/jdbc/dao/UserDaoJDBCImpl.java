@@ -48,6 +48,7 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
             statement.execute(query);
         } catch (SQLException e) {
             e.printStackTrace();
+            rollback();
         }
     }
 
@@ -58,6 +59,7 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
             statement.execute(query);
         } catch (SQLException e) {
             e.printStackTrace();
+            rollback();
         }
     }
 
@@ -71,6 +73,7 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            rollback();
         }
 
     }
@@ -83,6 +86,7 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            rollback();
         }
 
     }
@@ -113,6 +117,15 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
         try (Statement statement = conn.createStatement()) {
             statement.execute(query);
         } catch (SQLException e) {
+            e.printStackTrace();
+            rollback();
+        }
+    }
+
+    private void rollback() {
+        try {
+            conn.rollback();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
