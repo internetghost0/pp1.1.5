@@ -48,7 +48,6 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
             statement.execute(query);
         } catch (SQLException e) {
             e.printStackTrace();
-            rollback();
         }
     }
 
@@ -59,7 +58,6 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
             statement.execute(query);
         } catch (SQLException e) {
             e.printStackTrace();
-            rollback();
         }
     }
 
@@ -118,7 +116,6 @@ public class UserDaoJDBCImpl implements UserDao, AutoCloseable {
             statement.execute(query);
         } catch (SQLException e) {
             e.printStackTrace();
-            rollback();
         }
     }
 
