@@ -49,12 +49,14 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             User user = new User(name, lastName, age);
             session.save(user);
             transaction.commit();
         } catch (HibernateException e) {
+            rollback(transaction);
             e.printStackTrace();
         }
 
@@ -62,14 +64,16 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void removeUserById(long id) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             User user = session.get(User.class, id);
             if (user != null) {
                 session.delete(user);
             }
             transaction.commit();
         } catch (HibernateException e) {
+            rollback(transaction);
             e.printStackTrace();
         }
 
@@ -95,6 +99,11 @@ public class UserDaoHibernateImpl implements UserDao {
         } catch (HibernateException e) {
             e.printStackTrace();
         }
+    }
 
+    private void rollback(Transaction transaction) {
+        if (transaction != null) {
+            transaction.rollback();
+        }
     }
 }
